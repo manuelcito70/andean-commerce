@@ -165,7 +165,7 @@ router.post('/', authMiddleware, async (req, res) => {
           await db.pool.query(
             `INSERT INTO detalle_pago_cripto (pago_id, nowpayments_payment_id, moneda_pago, red, direccion_pago, monto_pago, monto_precio_usd, estado_cripto)
              VALUES ($1, $2, 'USDT', 'TRC20', 'pending', 0, $3, 'esperando')`,
-            [pagoRes.rows[0].id, npRes.data.id || `inv-${pedido.numeroPedido}`, totalUSD]
+            [pagoRes.rows[0].id, (npRes.data && npRes.data.id) ? npRes.data.id : ('inv-' + pedido.numeroPedido), totalUSD]
           );
         } else {
            console.warn("NOWPAYMENTS_API_KEY no configurada. URL de prueba generada.");

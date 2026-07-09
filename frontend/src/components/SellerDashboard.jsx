@@ -608,106 +608,316 @@ const SellerDashboard = () => {
       {/* MODAL CREAR NUEVO PRODUCTO */}
       {newProductModalOpen && (
         <div className="modal-overlay" onClick={() => setNewProductModalOpen(false)}>
-          <div className="modal-content new-product-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="checkout-header">
-              <h3 className="checkout-modal-title">Nuevo Producto</h3>
-              <button className="close-checkout-btn" onClick={() => setNewProductModalOpen(false)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
+          <div className="np-modal" onClick={(e) => e.stopPropagation()}>
+
+            {/* Header con logo */}
+            <div className="np-modal-header">
+              <button className="np-close-btn" onClick={() => setNewProductModalOpen(false)}>✕</button>
+              <div className="np-logo-row">
+                <img src="/andean comerce2.png" alt="Logo" style={{ height: '36px', width: 'auto' }} />
+                <span className="np-logo-text">Andean <span className="np-logo-accent">Commerce</span></span>
+              </div>
+              <h2 className="np-modal-title">Nuevo Producto</h2>
             </div>
-            
-            <form className="checkout-form" onSubmit={handleCreateProduct}>
-              <div className="form-group">
-                <label>Nombre del Producto *</label>
-                <input 
-                  type="text" 
-                  placeholder="Ej. Vasija pintada a mano"
-                  value={prodName}
-                  onChange={(e) => setProdName(e.target.value)}
-                  required
-                />
-              </div>
 
-              <div className="form-group">
-                <label>Categoría *</label>
-                <select value={prodCategory} onChange={(e) => setProdCategory(e.target.value)}>
-                  <option value="artesanal">Artesanías</option>
-                  <option value="alimentos">Alimentos</option>
-                  <option value="ropa">Ropa & Moda</option>
-                  <option value="electronica">Electrónica</option>
-                  <option value="hogar">Hogar</option>
-                  <option value="belleza">Belleza</option>
-                </select>
-              </div>
+            {/* Formulario */}
+            <div className="np-modal-body">
+              <form onSubmit={handleCreateProduct}>
+                <div className="np-form-card">
 
-              <div className="form-row-2">
-                <div className="form-group">
-                  <label>Precio Base (USD) *</label>
-                  <input 
-                    type="number" 
-                    step="0.01"
-                    placeholder="15.00"
-                    value={prodPrice}
-                    onChange={(e) => setProdPrice(e.target.value)}
-                    required
-                  />
+                  <div className="np-field">
+                    <label className="np-label">Nombre del Producto <span className="np-req">*</span></label>
+                    <input
+                      className="np-input"
+                      type="text"
+                      placeholder="Ej. Vasija pintada a mano"
+                      value={prodName}
+                      onChange={(e) => setProdName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="np-field">
+                    <label className="np-label">Categoría <span className="np-req">*</span></label>
+                    <div className="np-select-wrap">
+                      <select className="np-select" value={prodCategory} onChange={(e) => setProdCategory(e.target.value)}>
+                        <option value="artesanal">Artesanías</option>
+                        <option value="alimentos">Alimentos</option>
+                        <option value="ropa">Ropa &amp; Moda</option>
+                        <option value="electronica">Electrónica</option>
+                        <option value="hogar">Hogar</option>
+                        <option value="belleza">Belleza</option>
+                      </select>
+                      <span className="np-select-chevron">▾</span>
+                    </div>
+                  </div>
+
+                  <div className="np-row-2">
+                    <div className="np-field">
+                      <label className="np-label">Precio Base (USD) <span className="np-req">*</span></label>
+                      <div className="np-price-wrap">
+                        <input
+                          className="np-input np-price-input"
+                          type="number"
+                          step="0.01"
+                          placeholder="15.00"
+                          value={prodPrice}
+                          onChange={(e) => setProdPrice(e.target.value)}
+                          required
+                        />
+                        <span className="np-price-symbol">$</span>
+                      </div>
+                    </div>
+                    <div className="np-field">
+                      <label className="np-label">Cantidad en Stock <span className="np-req">*</span></label>
+                      <input
+                        className="np-input"
+                        type="number"
+                        placeholder="30"
+                        value={prodStock}
+                        onChange={(e) => setProdStock(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="np-field">
+                    <label className="np-label">Etiqueta / Badge <span className="np-opt">(Opcional)</span></label>
+                    <input
+                      className="np-input"
+                      type="text"
+                      placeholder="Ej. Hecho a mano, Orgánico, Nuevo"
+                      value={prodBadge}
+                      onChange={(e) => setProdBadge(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="np-field">
+                    <label className="np-label">Subir Imagen <span className="np-opt">(Opcional)</span></label>
+                    <input
+                      className="np-input np-file-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setProdImg(e.target.files[0])}
+                    />
+                  </div>
+
+                  <div className="np-field">
+                    <label className="np-label">Descrípción</label>
+                    <textarea
+                      className="np-textarea"
+                      placeholder="Escriba la descripción del producto..."
+                      value={prodDescription}
+                      onChange={(e) => setProdDescription(e.target.value)}
+                      rows="3"
+                    />
+                  </div>
+
                 </div>
-                <div className="form-group">
-                  <label>Cantidad en Stock *</label>
-                  <input 
-                    type="number" 
-                    placeholder="30"
-                    value={prodStock}
-                    onChange={(e) => setProdStock(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
 
-              <div className="form-group">
-                <label>Etiqueta / Badge (Opcional)</label>
-                <input 
-                  type="text" 
-                  placeholder="Ej. Hecho a mano, Orgánico, Nuevo"
-                  value={prodBadge}
-                  onChange={(e) => setProdBadge(e.target.value)}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Imagen del Producto</label>
-                <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={(e) => setProdImg(e.target.files[0])}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Descripción</label>
-                <textarea 
-                  placeholder="Escriba la descripción del producto..."
-                  value={prodDescription}
-                  onChange={(e) => setProdDescription(e.target.value)}
-                  rows="3"
-                />
-              </div>
-
-              <div className="checkout-footer">
-                <div></div>
-                <button type="submit" className="btn btn-accent btn-rounded" disabled={submittingProduct}>
+                <button type="submit" className="np-submit-btn" disabled={submittingProduct}>
                   {submittingProduct ? 'Publicando...' : 'Publicar Producto'}
                 </button>
-              </div>
-            </form>
+              </form>
+            </div>
+
           </div>
         </div>
       )}
 
       <style>{`
+        /* ── Nuevo Producto Modal ── */
+        .np-modal {
+          background: #f8f6f2;
+          border-radius: 20px;
+          width: 100%;
+          max-width: 520px;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+          animation: fadeIn 0.2s ease-out;
+        }
+        .np-modal-header {
+          background: #f8f6f2;
+          padding: 20px 24px 16px;
+          border-radius: 20px 20px 0 0;
+          text-align: center;
+          position: relative;
+          border-bottom: 1px solid #e8e3d8;
+        }
+        .np-close-btn {
+          position: absolute;
+          top: 16px;
+          right: 18px;
+          background: none;
+          border: none;
+          font-size: 18px;
+          color: #666;
+          cursor: pointer;
+          line-height: 1;
+          padding: 4px;
+          border-radius: 50%;
+          transition: background 0.15s;
+        }
+        .np-close-btn:hover { background: rgba(0,0,0,0.06); }
+        .np-logo-row {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+        .np-logo-text {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #1a1a1a;
+          letter-spacing: -0.3px;
+        }
+        .np-logo-accent { color: #e8660d; }
+        .np-modal-title {
+          font-size: 1.45rem;
+          font-weight: 700;
+          color: #2d6a3f;
+          margin: 0;
+          font-family: var(--font-serif, Georgia, serif);
+        }
+        .np-modal-body {
+          padding: 20px 24px 24px;
+        }
+        .np-form-card {
+          background: #fff;
+          border-radius: 14px;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+          margin-bottom: 16px;
+        }
+        .np-field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .np-label {
+          font-size: 0.92rem;
+          font-weight: 600;
+          color: #1a1a1a;
+        }
+        .np-req { color: #c0392b; margin-left: 2px; }
+        .np-opt { font-weight: 400; color: #888; font-size: 0.88rem; }
+        .np-input {
+          width: 100%;
+          padding: 10px 14px;
+          background: #f0ece4;
+          border: 1.5px solid transparent;
+          border-radius: 10px;
+          font-size: 0.95rem;
+          color: #1a1a1a;
+          outline: none;
+          transition: border-color 0.15s, box-shadow 0.15s;
+          box-sizing: border-box;
+        }
+        .np-input:focus {
+          border-color: #2d6a3f;
+          box-shadow: 0 0 0 3px rgba(45,106,63,0.12);
+          background: #fff;
+        }
+        .np-input::placeholder { color: #aaa; }
+        .np-select-wrap {
+          position: relative;
+        }
+        .np-select {
+          width: 100%;
+          padding: 10px 36px 10px 14px;
+          background: #f0ece4;
+          border: 1.5px solid transparent;
+          border-radius: 10px;
+          font-size: 0.95rem;
+          color: #1a1a1a;
+          outline: none;
+          appearance: none;
+          cursor: pointer;
+          transition: border-color 0.15s;
+          box-sizing: border-box;
+        }
+        .np-select:focus { border-color: #2d6a3f; background: #fff; }
+        .np-select-chevron {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          pointer-events: none;
+          color: #666;
+          font-size: 0.85rem;
+        }
+        .np-row-2 {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        .np-price-wrap {
+          position: relative;
+        }
+        .np-price-input {
+          padding-right: 40px;
+        }
+        .np-price-symbol {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-weight: 700;
+          color: #2d6a3f;
+          font-size: 0.95rem;
+          background: #e8f5ec;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 6px;
+        }
+        .np-file-input {
+          padding: 8px 14px;
+          cursor: pointer;
+        }
+        .np-textarea {
+          width: 100%;
+          padding: 10px 14px;
+          background: #f0ece4;
+          border: 1.5px solid transparent;
+          border-radius: 10px;
+          font-size: 0.95rem;
+          color: #1a1a1a;
+          outline: none;
+          resize: vertical;
+          font-family: inherit;
+          transition: border-color 0.15s, box-shadow 0.15s;
+          box-sizing: border-box;
+        }
+        .np-textarea:focus {
+          border-color: #2d6a3f;
+          box-shadow: 0 0 0 3px rgba(45,106,63,0.12);
+          background: #fff;
+        }
+        .np-textarea::placeholder { color: #aaa; }
+        .np-submit-btn {
+          width: 100%;
+          padding: 14px;
+          background: #1e5631;
+          color: #fff;
+          border: none;
+          border-radius: 12px;
+          font-size: 1.05rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.15s, transform 0.1s;
+          letter-spacing: 0.3px;
+        }
+        .np-submit-btn:hover:not(:disabled) { background: #2d6a3f; transform: translateY(-1px); }
+        .np-submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+        /* ── existing styles ── */
         .seller-dashboard-overlay {
           position: fixed;
           top: 0;
