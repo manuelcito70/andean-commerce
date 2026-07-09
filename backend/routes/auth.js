@@ -1,11 +1,13 @@
-const router = require('express').Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const db = require('../db');
+const router  = require('express').Router();
+const bcrypt   = require('bcryptjs');
+const jwt      = require('jsonwebtoken');
+const db       = require('../db');
 const authMiddleware = require('../middleware/auth');
 
+// -----------------------------------------------------------------------
 // @route   POST /api/auth/register
-// @desc    Registrar un usuario (cliente o vendedor)
+// @desc    Registrar un usuario (comprador o vendedor)
+// -----------------------------------------------------------------------
 router.post('/register', async (req, res) => {
   const { name, email, password, phone, role, storeName, city } = req.body;
 
@@ -14,50 +16,70 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ message: 'Por favor rellene todos los campos obligatorios.' });
   }
 
-  if (role !== 'cliente' && role !== 'vendedor') {
+  // El frontend usa 'cliente' y 'vendedor'; mapeamos a los ENUMs del nuevo schema
+  const rolMap = { cliente: 'comprador', vendedor: 'vendedor' };
+  const rolDB  = rolMap[role];
+  if (!rolDB) {
     return res.status(400).json({ message: 'Rol no válido.' });
   }
 
-  if (role === 'vendedor' && !storeName) {
+  if (rolDB === 'vendedor' && !storeName) {
     return res.status(400).json({ message: 'El nombre de la tienda es obligatorio para vendedores.' });
   }
 
+  const client = await db.pool.connect();
   try {
-    // Verificar si el usuario ya existe
-    const userExist = await db.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
-    if (userExist.rows.length > 0) {
+    await client.query('BEGIN');
+
+    // Verificar si el email ya está registrado
+    const existente = await client.query(
+      'SELECT id FROM usuarios WHERE email = $1',
+      [email.toLowerCase().trim()]
+    );
+    if (existente.rows.length > 0) {
+      await client.query('ROLLBACK');
       return res.status(400).json({ message: 'El correo electrónico ya está registrado.' });
     }
 
     // Hashear contraseña
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const salt           = await bcrypt.genSalt(10);
+    const contrasenaHash = await bcrypt.hash(password, salt);
 
-    // Generar avatar a partir de iniciales
+    // Generar avatar (iniciales)
     const nameParts = name.trim().split(/\s+/);
-    const avatar = nameParts.map(p => p[0]).join('').substring(0, 2).toUpperCase();
+    const avatar    = nameParts.map(p => p[0]).join('').substring(0, 2).toUpperCase();
 
-    // Guardar usuario
-    const newUser = await db.query(
-      `INSERT INTO users (name, email, password, phone, role, store_name, city, avatar)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email, phone, role, store_name, city, avatar`,
+    // Insertar usuario
+    const nuevoUsuario = await client.query(
+      `INSERT INTO usuarios (nombre, email, contrasena_hash, telefono, rol, avatar)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, nombre, email, telefono, rol, avatar`,
       [
         name.trim(),
         email.toLowerCase().trim(),
-        hashedPassword,
+        contrasenaHash,
         phone.trim(),
-        role,
-        role === 'vendedor' ? storeName.trim() : null,
-        city ? city.trim() : null,
+        rolDB,
         avatar
       ]
     );
 
-    const user = newUser.rows[0];
+    const usuario = nuevoUsuario.rows[0];
 
-    // Generar JWT Token
+    // Si es vendedor, crear perfil de tienda
+    if (rolDB === 'vendedor') {
+      await client.query(
+        `INSERT INTO perfiles_vendedor (usuario_id, nombre_tienda, ciudad)
+         VALUES ($1, $2, $3)`,
+        [usuario.id, storeName.trim(), city ? city.trim() : null]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    // Generar JWT
     const token = jwt.sign(
-      { id: user.id, role: user.role, email: user.email },
+      { id: usuario.id, role: role, email: usuario.email },   // 'role' en el token sigue siendo 'cliente'/'vendedor' para el frontend
       process.env.JWT_SECRET || 'supersecretkeyandeancommerce2026',
       { expiresIn: '7d' }
     );
@@ -65,24 +87,29 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       token,
       user: {
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        avatar: user.avatar,
-        storeName: user.store_name,
-        city: user.city
+        name:      usuario.nombre,
+        email:     usuario.email,
+        phone:     usuario.telefono,
+        role:      role,                 // 'cliente' o 'vendedor' para el frontend
+        avatar:    usuario.avatar,
+        storeName: rolDB === 'vendedor' ? storeName.trim() : null,
+        city:      city ? city.trim() : null
       }
     });
 
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error(err);
     res.status(500).json({ message: 'Error en el servidor al registrar usuario.' });
+  } finally {
+    client.release();
   }
 });
 
+// -----------------------------------------------------------------------
 // @route   POST /api/auth/login
 // @desc    Iniciar sesión
+// -----------------------------------------------------------------------
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -91,22 +118,34 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const result = await db.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+    // Buscar usuario + perfil de vendedor (si aplica)
+    const result = await db.query(
+      `SELECT u.id, u.nombre, u.email, u.contrasena_hash, u.telefono, u.rol, u.avatar,
+              pv.nombre_tienda, pv.ciudad
+       FROM usuarios u
+       LEFT JOIN perfiles_vendedor pv ON pv.usuario_id = u.id
+       WHERE u.email = $1`,
+      [email.toLowerCase().trim()]
+    );
+
     if (result.rows.length === 0) {
       return res.status(400).json({ message: 'Credenciales inválidas.' });
     }
 
-    const user = result.rows[0];
+    const usuario = result.rows[0];
 
-    // Comparar contraseñas
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Comparar contraseña
+    const isMatch = await bcrypt.compare(password, usuario.contrasena_hash);
     if (!isMatch) {
       return res.status(400).json({ message: 'Credenciales inválidas.' });
     }
 
-    // Generar JWT Token
+    // Mapear rol DB → rol frontend
+    const rolFrontend = usuario.rol === 'comprador' ? 'cliente' : usuario.rol; // vendedor/admin se pasan tal cual
+
+    // Generar JWT
     const token = jwt.sign(
-      { id: user.id, role: user.role, email: user.email },
+      { id: usuario.id, role: rolFrontend, email: usuario.email },
       process.env.JWT_SECRET || 'supersecretkeyandeancommerce2026',
       { expiresIn: '7d' }
     );
@@ -114,13 +153,13 @@ router.post('/login', async (req, res) => {
     res.json({
       token,
       user: {
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        avatar: user.avatar,
-        storeName: user.store_name,
-        city: user.city
+        name:      usuario.nombre,
+        email:     usuario.email,
+        phone:     usuario.telefono,
+        role:      rolFrontend,
+        avatar:    usuario.avatar,
+        storeName: usuario.nombre_tienda || null,
+        city:      usuario.ciudad || null
       }
     });
 
@@ -130,12 +169,18 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// -----------------------------------------------------------------------
 // @route   GET /api/auth/me
 // @desc    Obtener datos del usuario logueado
+// -----------------------------------------------------------------------
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const result = await db.query(
-      'SELECT name, email, phone, role, store_name AS "storeName", city, avatar FROM users WHERE id = $1',
+      `SELECT u.nombre AS name, u.email, u.telefono AS phone, u.rol, u.avatar,
+              pv.nombre_tienda, pv.ciudad
+       FROM usuarios u
+       LEFT JOIN perfiles_vendedor pv ON pv.usuario_id = u.id
+       WHERE u.id = $1`,
       [req.user.id]
     );
 
@@ -143,7 +188,19 @@ router.get('/me', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    res.json(result.rows[0]);
+    const u = result.rows[0];
+    const rolFrontend = u.rol === 'comprador' ? 'cliente' : u.rol;
+
+    res.json({
+      name:      u.name,
+      email:     u.email,
+      phone:     u.phone,
+      role:      rolFrontend,
+      avatar:    u.avatar,
+      storeName: u.nombre_tienda || null,
+      city:      u.ciudad || null
+    });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error en el servidor al obtener perfil.' });
