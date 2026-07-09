@@ -167,12 +167,7 @@ const MainApp = () => {
         <div className="mf-inner">
           <div className="mf-brand">
             <div className="mf-logo">
-              <div className="mf-logo-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                    stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
+              <img src="/andean comerce2.png" alt="Andean Commerce Logo" style={{ height: '34px', width: 'auto', objectFit: 'contain' }} />
               <span>Andean <span className="mf-logo-acc">Commerce</span></span>
             </div>
             <p className="mf-tagline">El mercado digital que conecta a productores, artesanos y emprendedores locales con toda Bolivia.</p>
