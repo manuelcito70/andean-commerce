@@ -348,6 +348,28 @@ const CheckoutModal = () => {
                 </div>
               </label>
 
+              {/* Criptomonedas */}
+              <label className={`pay-method-card ${paymentMethod === 'cripto' ? 'active' : ''}`}>
+                <input 
+                  type="radio" 
+                  name="paymentMethod" 
+                  value="cripto"
+                  checked={paymentMethod === 'cripto'}
+                  onChange={() => setPaymentMethod('cripto')}
+                  className="sr-only"
+                />
+                <div className="method-card-content">
+                  <svg className="method-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v12M9 9h6M9 15h6"></path>
+                  </svg>
+                  <div className="method-text">
+                    <span className="method-title">Criptomonedas (NOWPayments)</span>
+                    <span className="method-desc">Paga con USDT, USDC, BTC o ETH</span>
+                  </div>
+                </div>
+              </label>
+
             </div>
 
             {/* Detalles dinámicos del pago */}
@@ -416,6 +438,21 @@ const CheckoutModal = () => {
               {paymentMethod === 'delivery' && (
                 <div className="delivery-msg-box">
                   <p>📦 <strong>Pagarás al recibir:</strong> Prepara el monto exacto de <strong>{formattedTotalPay}</strong> al momento de la entrega para agilizar el proceso.</p>
+                </div>
+              )}
+
+              {paymentMethod === 'cripto' && (
+                <div className="crypto-msg-box">
+                  <p>🪙 <strong>Pago seguro con Criptomonedas:</strong></p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', marginTop: '4px' }}>
+                    Serás redirigido a la pasarela segura de NOWPayments para completar tu pago. Aceptamos:
+                  </p>
+                  <div className="crypto-badge-container">
+                    <span className="crypto-badge btc">BTC</span>
+                    <span className="crypto-badge eth">ETH</span>
+                    <span className="crypto-badge usdt">USDT</span>
+                    <span className="crypto-badge usdc">USDC</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -895,6 +932,38 @@ const CheckoutModal = () => {
           font-size: 0.8rem;
           color: var(--muted-foreground);
         }
+
+        .crypto-msg-box {
+          background-color: rgba(45, 106, 63, 0.05);
+          border-left: 4px solid #2d6a3f;
+          padding: 12px 16px;
+          border-radius: 6px;
+          animation: fadeIn 0.2s ease-out;
+        }
+        .crypto-msg-box p {
+          margin: 0;
+          font-weight: 600;
+          color: #2d6a3f;
+          font-size: 0.9rem;
+        }
+        .crypto-badge-container {
+          display: flex;
+          gap: 8px;
+          margin-top: 10px;
+          flex-wrap: wrap;
+        }
+        .crypto-badge {
+          font-size: 0.75rem;
+          font-weight: 700;
+          padding: 4px 10px;
+          border-radius: 6px;
+          text-transform: uppercase;
+          color: #fff;
+        }
+        .crypto-badge.btc { background-color: #f7931a; }
+        .crypto-badge.eth { background-color: #627eea; }
+        .crypto-badge.usdt { background-color: #26a17b; }
+        .crypto-badge.usdc { background-color: #2775ca; }
 
         .sr-only {
           position: absolute;
