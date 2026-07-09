@@ -30,7 +30,7 @@ const SellerDashboard = () => {
   const [prodStock, setProdStock] = useState('');
   const [prodBadge, setProdBadge] = useState('');
   const [prodDescription, setProdDescription] = useState('');
-  const [prodImg, setProdImg] = useState('');
+  const [prodImg, setProdImg] = useState(null);
   const [submittingProduct, setSubmittingProduct] = useState(false);
 
   // Edición rápida de Stock/Precio
@@ -105,21 +105,21 @@ const SellerDashboard = () => {
 
     setSubmittingProduct(true);
     try {
+      const formData = new FormData();
+      formData.append('name', prodName);
+      formData.append('category', prodCategory);
+      formData.append('priceUSD', prodPrice);
+      formData.append('stock', prodStock);
+      if (prodBadge) formData.append('badge', prodBadge);
+      if (prodDescription) formData.append('description', prodDescription);
+      if (prodImg) formData.append('img', prodImg);
+
       const res = await fetch(`${API_URL}/seller/products`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          name: prodName,
-          category: prodCategory,
-          priceUSD: Number(prodPrice),
-          stock: parseInt(prodStock),
-          badge: prodBadge,
-          img: prodImg,
-          description: prodDescription
-        })
+        body: formData
       });
 
       if (res.ok) {
@@ -130,7 +130,7 @@ const SellerDashboard = () => {
         setProdStock('');
         setProdBadge('');
         setProdDescription('');
-        setProdImg('');
+        setProdImg(null);
         // Recargar productos
         fetchDashboardData();
       } else {
@@ -678,12 +678,11 @@ const SellerDashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>Imagen URL (Opcional)</label>
+                <label>Imagen del Producto</label>
                 <input 
-                  type="url" 
-                  placeholder="https://images.unsplash.com/..."
-                  value={prodImg}
-                  onChange={(e) => setProdImg(e.target.value)}
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => setProdImg(e.target.files[0])}
                 />
               </div>
 

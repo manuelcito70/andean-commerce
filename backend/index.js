@@ -20,12 +20,14 @@ const authRouter = require('./routes/auth');
 const productsRouter = require('./routes/products');
 const ordersRouter = require('./routes/orders');
 const sellerRouter = require('./routes/seller');
+const webhooksRouter = require('./routes/webhooks');
 
 // Registrar rutas en Express
 app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/seller', sellerRouter);
+app.use('/api/webhooks', webhooksRouter);
 
 // Ruta directa para el Tipo de Cambio (como se especifica en el prompt)
 app.get('/api/exchange-rate', (req, res) => {

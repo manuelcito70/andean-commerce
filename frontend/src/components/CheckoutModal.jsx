@@ -137,6 +137,13 @@ const CheckoutModal = () => {
         throw new Error(orderData.message || 'Error al registrar el pedido.');
       }
 
+      // Si es pago cripto y tenemos URL de pago, redirigir
+      if (paymentMethod === 'cripto' && orderData.paymentUrl) {
+        clearCart(); // Limpiar el carrito antes de redirigir
+        window.location.href = orderData.paymentUrl;
+        return;
+      }
+
       // 3. Flujo Exitoso
       setStep(3);
       setTimeout(() => {

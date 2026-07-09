@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const axios  = require('axios');
 const db     = require('../db');
 const authMiddleware = require('../middleware/auth');
 
@@ -131,6 +132,50 @@ router.post('/', authMiddleware, async (req, res) => {
 
     await client.query('COMMIT');
 
+    let paymentUrl = null;
+
+    if (metodoDB === 'cripto') {
+      try {
+        const npApiKey = process.env.NOWPAYMENTS_API_KEY;
+        if (npApiKey) {
+          const npRes = await axios.post('https://api.nowpayments.io/v1/invoice', {
+            price_amount: totalUSD,
+            price_currency: 'usd',
+            order_id: pedido.id,
+            order_description: `Pedido ${pedido.numeroPedido} en Andean Commerce`,
+            ipn_callback_url: 'https://tu-dominio.com/api/webhooks/nowpayments',
+            success_url: 'http://localhost:5173/profile',
+            cancel_url: 'http://localhost:5173/cart'
+          }, {
+            headers: {
+              'x-api-key': npApiKey,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          paymentUrl = npRes.data.invoice_url;
+
+          // Guardar pago en la base de datos
+          const pagoRes = await db.pool.query(
+            `INSERT INTO pagos (pedido_id, metodo, moneda, monto, estado)
+             VALUES ($1, 'cripto', $2, $3, 'pendiente') RETURNING id`,
+            [pedido.id, monedaDB, totalUSD]
+          );
+
+          await db.pool.query(
+            `INSERT INTO detalle_pago_cripto (pago_id, nowpayments_payment_id, moneda_pago, red, direccion_pago, monto_pago, monto_precio_usd, estado_cripto)
+             VALUES ($1, $2, 'USDT', 'TRC20', 'pending', 0, $3, 'esperando')`,
+            [pagoRes.rows[0].id, npRes.data.id || \`inv-\${pedido.numeroPedido}\`, totalUSD]
+          );
+        } else {
+           console.warn("NOWPAYMENTS_API_KEY no configurada. URL de prueba generada.");
+           paymentUrl = `https://nowpayments.io/payment/?iid=dummy-${pedido.numeroPedido}`;
+        }
+      } catch (npErr) {
+        console.error('Error al crear invoice de NOWPayments:', npErr.response?.data || npErr.message);
+      }
+    }
+
     // Devolver en el mismo formato que el frontend espera
     res.status(201).json({
       id:              pedido.id,
@@ -143,7 +188,8 @@ router.post('/', authMiddleware, async (req, res) => {
       totalUSD:        pedido.totalUSD,
       status:          'Pendiente',
       items:           itemsConDetalles,
-      createdAt:       pedido.createdAt
+      createdAt:       pedido.createdAt,
+      paymentUrl:      paymentUrl
     });
 
   } catch (err) {

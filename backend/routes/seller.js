@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const db     = require('../db');
 const authMiddleware  = require('../middleware/auth');
+const upload = require('../middleware/upload');
+const cloudinary = require('../config/cloudinary');
 
 // Middleware: solo vendedores
 const soloVendedor = (req, res, next) => {
@@ -133,8 +135,8 @@ router.get('/products', [authMiddleware, soloVendedor], async (req, res) => {
 // @route   POST /api/seller/products
 // @desc    Crear un nuevo producto
 // -----------------------------------------------------------------------
-router.post('/products', [authMiddleware, soloVendedor], async (req, res) => {
-  const { name, category, priceUSD, stock, badge, img, description } = req.body;
+router.post('/products', [authMiddleware, soloVendedor, upload.single('img')], async (req, res) => {
+  const { name, category, priceUSD, stock, badge, description } = req.body;
 
   if (!name || !category || priceUSD === undefined || stock === undefined) {
     return res.status(400).json({ message: 'Faltan campos obligatorios para crear el producto.' });
@@ -149,15 +151,30 @@ router.post('/products', [authMiddleware, soloVendedor], async (req, res) => {
     if (perfilRes.rows.length === 0) {
       return res.status(404).json({ message: 'Perfil de vendedor no encontrado.' });
     }
-    const { nombre_tienda, ciudad } = perfilRes.rows[0];
+    const { ciudad } = perfilRes.rows[0];
 
     // Obtener id de la categoría por slug
     const catRes = await db.query('SELECT id FROM categorias WHERE slug = $1', [category]);
     const categoriaId = catRes.rows.length > 0 ? catRes.rows[0].id : null;
 
-    const productImage = img && img.trim() !== ''
-      ? img
-      : (defaultImages[category] || defaultImages.artesanal);
+    let productImage = defaultImages[category] || defaultImages.artesanal;
+
+    if (req.file) {
+      // Subir a Cloudinary usando stream
+      const uploadPromise = new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'andean_commerce/products' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+
+      const result = await uploadPromise;
+      productImage = result.secure_url;
+    }
 
     const newProd = await db.query(
       `INSERT INTO productos
