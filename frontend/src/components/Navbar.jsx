@@ -2,29 +2,29 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory }) => {
-  const { 
-    user, 
-    logout, 
-    cart, 
-    currency, 
-    setCurrency, 
-    setAuthOpen, 
-    setCartOpen, 
+  const {
+    user,
+    logout,
+    cart,
+    currency,
+    setCurrency,
+    setAuthOpen,
+    setCartOpen,
     setSellerDashOpen,
     wishlist
   } = useAuth();
-  
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const cartCount = cart.reduce((total, item) => total + item.qty, 0);
 
   const categories = [
-    { id: 'all',       label: 'Todo',          emoji: '🛍️' },
-    { id: 'artesanal', label: 'Artesanías',     emoji: '🎨' },
-    { id: 'alimentos', label: 'Alimentos',      emoji: '🥬' },
-    { id: 'ropa',      label: 'Ropa & Moda',    emoji: '👗' },
-    { id: 'electronica',label: 'Electrónica',   emoji: '📱' },
-    { id: 'hogar',     label: 'Hogar',          emoji: '🏠' },
-    { id: 'belleza',   label: 'Belleza',        emoji: '✨' },
+    { id: 'all', label: 'Todo', emoji: '🛍️' },
+    { id: 'artesanal', label: 'Artesanías', emoji: '🎨' },
+    { id: 'alimentos', label: 'Alimentos', emoji: '🥬' },
+    { id: 'ropa', label: 'Ropa & Moda', emoji: '👗' },
+    { id: 'electronica', label: 'Electrónica', emoji: '📱' },
+    { id: 'hogar', label: 'Hogar', emoji: '🏠' },
+    { id: 'belleza', label: 'Belleza', emoji: '✨' },
   ];
 
   return (
@@ -35,22 +35,18 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
 
           {/* Logo */}
           <div className="nb-logo" onClick={() => { setActiveCategory('all'); setSearchQuery(''); }}>
-            <div className="nb-logo-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                  stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <span className="nb-logo-text">
-              <span>Andean <span className="nb-logo-accent">Commerce</span></span>
-            </span>
+            <img
+              src="/andean comerce.png"
+              alt="Andean Commerce"
+              style={{ height: '190px', width: 'auto', display: 'block', pointerEvents: 'auto' }}
+            />
           </div>
 
           {/* Buscador */}
           <div className="nb-search-wrap">
             <svg className="nb-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <circle cx="11" cy="11" r="8" stroke="rgba(255,255,255,0.7)" strokeWidth="2"/>
-              <path d="m21 21-4.35-4.35" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round"/>
+              <circle cx="11" cy="11" r="8" stroke="rgba(255,255,255,0.7)" strokeWidth="2" />
+              <path d="m21 21-4.35-4.35" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" />
             </svg>
             <input
               type="text"
@@ -62,8 +58,8 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
             {searchQuery && (
               <button className="nb-search-clear" onClick={() => setSearchQuery('')}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                  <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                  <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                 </svg>
               </button>
             )}
@@ -91,9 +87,9 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
             <button className="nb-cart-btn" onClick={() => setCartOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"
-                  stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <line x1="3" y1="6" x2="21" y2="6" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M16 10a4 4 0 01-8 0" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+                  stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <line x1="3" y1="6" x2="21" y2="6" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                <path d="M16 10a4 4 0 01-8 0" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
               </svg>
               {cartCount > 0 && <span className="nb-cart-badge">{cartCount}</span>}
             </button>
@@ -105,7 +101,7 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
                   <div className="nb-avatar">{user.avatar}</div>
                   <span className="nb-user-name">{user.name.split(' ')[0]}</span>
                   <svg className={`nb-chevron ${dropdownOpen ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </button>
 
@@ -123,7 +119,7 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
                       {user.role === 'vendedor' && (
                         <li>
                           <button onClick={() => { setDropdownOpen(false); setSellerDashOpen(true); }}>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
                             Panel de vendedor
                           </button>
                         </li>
@@ -131,7 +127,7 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
 
                       <li>
                         <button onClick={() => { setDropdownOpen(false); alert(`Nombre: ${user.name}\nEmail: ${user.email}\nTeléfono: ${user.phone}\nCiudad: ${user.city || 'No especificada'}`); }}>
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                           Mi perfil
                         </button>
                       </li>
@@ -139,7 +135,7 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
                       {user.role === 'cliente' && (
                         <li>
                           <button onClick={() => { setDropdownOpen(false); alert('Historial de pedidos próximamente.'); }}>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                             Mis pedidos
                           </button>
                         </li>
@@ -147,7 +143,7 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
 
                       <li>
                         <button onClick={() => { setDropdownOpen(false); setActiveCategory('wishlist'); }}>
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg>
                           Favoritos ({wishlist.length})
                         </button>
                       </li>
@@ -155,7 +151,7 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
                       <li className="nb-dropdown-divider" />
                       <li>
                         <button className="nb-logout-btn" onClick={() => { setDropdownOpen(false); logout(); }}>
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
                           Cerrar sesión
                         </button>
                       </li>
@@ -165,7 +161,7 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
               </div>
             ) : (
               <button className="nb-login-btn" onClick={() => setAuthOpen(true)}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                 <span>Ingresar</span>
               </button>
             )}
@@ -202,14 +198,19 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
         /* ── Barra superior ── */
         .nb-top {
           background: var(--green-main);
+          height: 60px;
+          overflow: visible;
+          position: relative;
+          z-index: 100;
         }
         .nb-top-inner {
           display: flex;
           align-items: center;
           gap: 16px;
-          padding: 12px 2rem;
+          padding: 0 2rem;
           max-width: 1280px;
           margin: 0 auto;
+          height: 100%;
         }
 
         /* ── Logo ── */
@@ -220,6 +221,9 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
           flex-shrink: 0;
           cursor: pointer;
           user-select: none;
+          pointer-events: none;
+          position: relative;
+          z-index: 101;
         }
         .nb-logo-icon {
           width: 38px;
@@ -450,6 +454,8 @@ const Navbar = ({ searchQuery, setSearchQuery, activeCategory, setActiveCategory
         .nb-cat-nav {
           background: var(--green-dark);
           border-top: 1px solid rgba(255,255,255,0.08);
+          position: relative;
+          z-index: 102;
         }
         .nb-cat-inner {
           display: flex;
