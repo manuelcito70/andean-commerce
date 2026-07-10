@@ -94,13 +94,15 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const numeroPedido = generarNumeroPedido();
 
+    const estadoInicial = metodoDB === 'cripto' ? 'pendiente' : 'pagado';
+
     // Insertar el pedido
     const nuevoPedido = await client.query(
       `INSERT INTO pedidos
          (comprador_id, numero_pedido, estado, moneda, tasa_cambio,
           direccion_entrega, ciudad_entrega, nombre_comprador, telefono_comprador,
           metodo_pago, total, items_json)
-       VALUES ($1, $2, 'pendiente', $3, 6.96, $4, $5, $6, $7, $8, $9, $10)
+       VALUES ($1, $2, $3, $4, 6.96, $5, $6, $7, $8, $9, $10, $11)
        RETURNING id, numero_pedido AS "numeroPedido", estado, moneda,
                  direccion_entrega AS "deliveryAddress", ciudad_entrega AS "deliveryCity",
                  nombre_comprador AS "buyerName", telefono_comprador AS "buyerPhone",
@@ -108,6 +110,7 @@ router.post('/', authMiddleware, async (req, res) => {
       [
         req.user.id,
         numeroPedido,
+        estadoInicial,
         monedaDB,
         deliveryAddress,
         deliveryCity,
@@ -129,6 +132,16 @@ router.post('/', authMiddleware, async (req, res) => {
         [pedido.id, item.product.id, item.product.seller_id, item.qty, item.product.priceUSD]
       );
     }
+    
+    // Guardar pago en la base de datos
+    const estadoPago = metodoDB === 'cripto' ? 'pendiente' : 'completado';
+    const pagadoEn = estadoPago === 'completado' ? new Date() : null;
+    const pagoRes = await client.query(
+      `INSERT INTO pagos (pedido_id, metodo, moneda, monto, estado, pagado_en)
+       VALUES ($1, $2, $3, $4, $5::estado_pago, $6) RETURNING id`,
+      [pedido.id, metodoDB, monedaDB, totalUSD, estadoPago, pagadoEn]
+    );
+    const pagoId = pagoRes.rows[0].id;
 
     await client.query('COMMIT');
 
@@ -155,17 +168,10 @@ router.post('/', authMiddleware, async (req, res) => {
           
           paymentUrl = npRes.data.invoice_url;
 
-          // Guardar pago en la base de datos
-          const pagoRes = await db.pool.query(
-            `INSERT INTO pagos (pedido_id, metodo, moneda, monto, estado)
-             VALUES ($1, 'cripto', $2, $3, 'pendiente') RETURNING id`,
-            [pedido.id, monedaDB, totalUSD]
-          );
-
           await db.pool.query(
             `INSERT INTO detalle_pago_cripto (pago_id, nowpayments_payment_id, moneda_pago, red, direccion_pago, monto_pago, monto_precio_usd, estado_cripto)
              VALUES ($1, $2, 'USDT', 'TRC20', 'pending', 0, $3, 'esperando')`,
-            [pagoRes.rows[0].id, (npRes.data && npRes.data.id) ? npRes.data.id : ('inv-' + pedido.numeroPedido), totalUSD]
+            [pagoId, (npRes.data && npRes.data.id) ? npRes.data.id : ('inv-' + pedido.numeroPedido), totalUSD]
           );
         } else {
            console.warn("NOWPAYMENTS_API_KEY no configurada. URL de prueba generada.");

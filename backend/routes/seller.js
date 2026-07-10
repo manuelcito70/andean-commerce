@@ -160,13 +160,19 @@ router.post('/products', [authMiddleware, soloVendedor, upload.single('img')], a
     let productImage = defaultImages[category] || defaultImages.artesanal;
 
     if (req.file) {
+      console.log('[Cloudinary] Archivo recibido:', req.file.originalname, req.file.size, 'bytes');
       // Subir a Cloudinary usando stream
       const uploadPromise = new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: 'andean_commerce/products' },
           (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
+            if (error) {
+              console.error('[Cloudinary] Error al subir:', error);
+              reject(error);
+            } else {
+              console.log('[Cloudinary] Subido OK:', result.secure_url);
+              resolve(result);
+            }
           }
         );
         stream.end(req.file.buffer);
@@ -174,6 +180,9 @@ router.post('/products', [authMiddleware, soloVendedor, upload.single('img')], a
 
       const result = await uploadPromise;
       productImage = result.secure_url;
+      console.log('[Cloudinary] URL guardada:', productImage);
+    } else {
+      console.log('[Cloudinary] No se recibió archivo. Usando imagen por defecto:', productImage);
     }
 
     const newProd = await db.query(
